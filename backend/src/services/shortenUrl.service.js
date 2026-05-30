@@ -1,5 +1,6 @@
 import { nanoid } from "nanoid";
 import pkg from "@prisma/client";
+import redis from "../config/redis.js";
 
 const { PrismaClient } = pkg;
 
@@ -26,9 +27,11 @@ const shortenUrl = async (req, res) => {
       },
     });
 
+    redis.set(response.shortUrl, originalUrl, {ex:60*60*24})
+
     return res.status(200).json({shortUrl : `${response.shortUrl}`});
   } catch (err) {
-    res.status(400).json({message:err})
+    res.status(400).json({message:err.message})
   }
 };
 

@@ -1,4 +1,5 @@
 import pkg from "@prisma/client";
+import redis from "../config/redis.js";
 
 const { PrismaClient } = pkg;
 
@@ -12,6 +13,13 @@ const getOriginalUrl = async (req, res) => {
       return res.status(400).json({ message: "Short URL required" });
     }
 
+    const cachedUrl = await redis.get(shorturl)
+
+    if(cachedUrl){
+      console.log('from redis')
+      return res.status(302).redirect(cachedUrl);
+    }
+
     const response = await prisma.url.findUnique({
       where: {
         shortUrl: shorturl,
@@ -23,6 +31,8 @@ const getOriginalUrl = async (req, res) => {
         message: "URL not found",
       });
     }
+
+    redis.set(shorturl,response.originalUrl,{ex:60*60*24})
 
     res.status(302).redirect(response.originalUrl);
   } catch (err) {
