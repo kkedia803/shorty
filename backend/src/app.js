@@ -4,7 +4,7 @@ import shortRouter from './routes/url.routes.js';
 import cors from 'cors';
 
 app.use(express.json())
-app.use(cors({origin:process.env.ORIGIN_URL}));
+app.use(cors({origin:'*'}));
 
 app.use('/', shortRouter)
 
